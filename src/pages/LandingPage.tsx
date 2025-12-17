@@ -6,8 +6,8 @@ import {
   Mic2,
   Brain,
   Sparkles,
-  // ArrowRight,
-  // Play,
+  ArrowRight,
+  Play,
   Zap,
   Globe,
   CheckCircle2,
@@ -95,9 +95,14 @@ export default function LandingPage() {
               EdTech Labs
             </span>
           </Link>
-          {/* <button className="px-8 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all duration-200">
+          <a
+            href="https://cms-staging.edtechinc.com/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all duration-200"
+          >
             Sign In
-          </button> */}
+          </a>
         </div>
       </nav>
 
@@ -121,16 +126,21 @@ export default function LandingPage() {
           </p>
 
           {/* CTAs */}
-          {/* <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button className="group px-10 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 flex items-center gap-2 shadow-2xl shadow-white/10">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <a
+              href="https://cms-staging.edtechinc.com/login"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group px-10 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 flex items-center gap-2 shadow-2xl shadow-white/10"
+            >
               Start Creating
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </a>
             <button className="group px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-semibold text-lg hover:bg-white/10 transition-all duration-200 flex items-center gap-2 backdrop-blur-sm">
               <Play className="w-5 h-5" />
               Watch Demo
             </button>
-          </div> */}
+          </div>
 
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-12 text-white/40 text-xs sm:text-sm">
@@ -342,10 +352,15 @@ export default function LandingPage() {
             Join teams creating multimedia at scale.
           </p>
 
-          {/* <button className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 shadow-2xl shadow-white/20">
+          <a
+            href="https://cms-staging.edtechinc.com/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 shadow-2xl shadow-white/20"
+          >
             Get Started
             <ArrowRight className="w-5 h-5" />
-          </button> */}
+          </a>
         </div>
       </section>
 
