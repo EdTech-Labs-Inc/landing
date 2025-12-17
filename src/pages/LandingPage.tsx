@@ -105,7 +105,7 @@ export default function LandingPage() {
       <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
         <div className="max-w-5xl mx-auto text-center relative z-10">
           {/* Main Headline */}
-          <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold text-white mb-8 tracking-tight leading-[0.95]">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold text-white mb-8 tracking-tight leading-[0.95]">
             One Article.
             <br />
             <span className="bg-gradient-to-r from-purple-300 via-purple-100 to-white bg-clip-text text-transparent">
@@ -114,7 +114,7 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-2xl md:text-3xl text-white/50 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-3xl text-white/50 mb-12 max-w-3xl mx-auto font-light leading-relaxed px-2">
             AI transforms your text into audio, video, podcasts,
             <br className="hidden md:block" />
             and interactive quizzes—instantly.
@@ -133,17 +133,17 @@ export default function LandingPage() {
           </div> */}
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-12 text-white/40 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-12 text-white/40 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
               <span>5 Content Formats</span>
             </div>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="hidden sm:block w-px h-4 bg-white/10" />
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4" />
               <span>10x Faster</span>
             </div>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="hidden sm:block w-px h-4 bg-white/10" />
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               <span>4 Languages</span>
