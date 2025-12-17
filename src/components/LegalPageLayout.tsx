@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, 
+  // ArrowLeft 
+  } from 'lucide-react';
 
 interface LegalPageLayoutProps {
   children: React.ReactNode;
@@ -31,13 +33,13 @@ export function LegalPageLayout({ children, title }: LegalPageLayoutProps) {
               EdTech Labs
             </span>
           </Link>
-          <Link
+          {/* <Link
             to="/"
             className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
-          </Link>
+          </Link> */}
         </div>
       </nav>
 
@@ -68,7 +70,7 @@ export function LegalPageLayout({ children, title }: LegalPageLayoutProps) {
               Privacy Policy
             </Link>
             <span className="text-white/30">
-              &copy; {new Date().getFullYear()} EdTech Labs
+              &copy; {new Date().getFullYear()} EdTech Labs, Inc.
             </span>
           </div>
         </div>
