@@ -7,7 +7,6 @@ import {
   Brain,
   Sparkles,
   ArrowRight,
-  Play,
   Zap,
   Globe,
   CheckCircle2,
@@ -15,340 +14,430 @@ import {
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
-  const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
+  const [rotatingWordIndex, setRotatingWordIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const rotatingWords = ['video', 'engagement', 'content', 'experiences', 'impact'];
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Track mouse position for interactive dot glow
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-
-    const elements = document.querySelectorAll('[data-timeline-item]');
-
-    elements.forEach((element, index) => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setVisibleItems((prev) => new Set(prev).add(index));
-            }
-          });
-        },
-        { threshold: 0.2 }
-      );
-
-      observer.observe(element);
-      observers.push(observer);
-    });
-
-    return () => {
-      observers.forEach((observer) => observer.disconnect());
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
-  }, [mounted]);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Rotate words every 3 seconds with smooth transition
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
+
+      setTimeout(() => {
+        setRotatingWordIndex((prev) => (prev + 1) % rotatingWords.length);
+
+        // Small delay before starting enter animation
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 50);
+      }, 400);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [rotatingWords.length]);
+
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden relative">
-      {/* Cosmic grid background */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '100px 100px'
-        }} />
+    <div className="min-h-screen bg-background overflow-hidden relative">
+      {/* SVG Noise Filter - very subtle dithering */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <filter id="noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="2" stitchTiles="stitch"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+              <feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1"/>
+            </feComponentTransfer>
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Base dot pattern with gradient fade - more intense at top, subtle at bottom */}
+      <div
+        className="fixed inset-0 pointer-events-none pattern-dots"
+        style={{
+          zIndex: 1,
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%)',
+        }}
+      ></div>
+
+      {/* Interactive illuminated dots layer */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: 2,
+          backgroundImage: 'radial-gradient(circle, rgba(255, 140, 90, 0) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+          maskImage: `radial-gradient(circle 40px at ${mousePosition.x}px ${mousePosition.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)`,
+          WebkitMaskImage: `radial-gradient(circle 40px at ${mousePosition.x}px ${mousePosition.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)`,
+        }}
+      >
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255, 140, 90, 0.8) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        ></div>
       </div>
 
-      {/* Main radial glow - hero focal point */}
-      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1400px] pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-radial from-purple-500/40 via-purple-600/10 to-transparent blur-3xl" />
-        <div className="absolute inset-0 bg-gradient-radial from-purple-600/30 via-purple-500/5 to-transparent blur-2xl" />
-      </div>
-
-      {/* Floating particles - only render on client */}
-      {mounted && (
-        <div className="fixed inset-0 pointer-events-none">
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Sparkles className="w-5 h-5 text-white" />
+      {/* Navigation - Savona absolute transparent header */}
+      <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between relative">
+            {/* Logo - Left aligned */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-primary">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-display text-xl font-bold text-foreground">
+                EdTech Labs
+              </span>
             </div>
-            <span className="text-xl font-semibold text-white tracking-tight">
-              EdTech Labs
-            </span>
-          </Link>
-          <a
-            href="https://cms-staging.edtechinc.com/login"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-8 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all duration-200"
-          >
-            Sign In
-          </a>
-        </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold text-white mb-8 tracking-tight leading-[0.95]">
-            One Article.
-            <br />
-            <span className="bg-gradient-to-r from-purple-300 via-purple-100 to-white bg-clip-text text-transparent">
-              Five AI Formats.
-            </span>
-          </h1>
+            {/* Nav - Absolutely centered */}
+            <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+                Features
+              </a>
+              <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+                How It Works
+              </a>
+              <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                Solutions
+              </a>
+            </nav>
 
-          {/* Subheadline */}
-          <p className="text-lg sm:text-xl md:text-3xl text-white/50 mb-12 max-w-3xl mx-auto font-light leading-relaxed px-2">
-            AI transforms your text into audio, video, podcasts,
-            <br className="hidden md:block" />
-            and interactive quizzes—instantly.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            {/* CTA - Right aligned */}
             <a
               href="https://cms-staging.edtechinc.com/login"
               target="_blank"
               rel="noopener noreferrer"
-              className="group px-10 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 flex items-center gap-2 shadow-2xl shadow-white/10"
+              className="px-6 py-2 rounded-lg border border-border bg-transparent text-foreground text-sm font-semibold hover:bg-muted transition-all duration-200"
             >
-              Start Creating
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Sign In
             </a>
-            <button className="group px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-semibold text-lg hover:bg-white/10 transition-all duration-200 flex items-center gap-2 backdrop-blur-sm">
-              <Play className="w-5 h-5" />
-              Watch Demo
-            </button>
-          </div>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-12 text-white/40 text-xs sm:text-sm">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>5 Content Formats</span>
-            </div>
-            <div className="hidden sm:block w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              <span>10x Faster</span>
-            </div>
-            <div className="hidden sm:block w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              <span>4 Languages</span>
-            </div>
           </div>
         </div>
+      </header>
 
-        {/* Subtle preview cards - more ethereal */}
-        <div className="absolute bottom-20 left-0 right-0 pointer-events-none hidden lg:block">
-          <div className="max-w-7xl mx-auto px-6 relative h-32">
-            {/* Video preview */}
-            <div className="absolute left-0 bottom-0 w-80 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-md border border-white/5 transform -rotate-3 opacity-60 hover:opacity-100 transition-opacity duration-500">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
-                  <Video className="w-5 h-5 text-pink-400" />
-                </div>
-                <div>
-                  <div className="text-white text-sm font-medium">AI Video</div>
-                  <div className="text-white/30 text-xs">with avatars</div>
-                </div>
-              </div>
+      {/* Hero Section - Savona style */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Vertical gradient background - lighter peach top, darker bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-accent-peach/10 via-accent-peach/4 to-background"></div>
+
+        {/* Content */}
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-8">
+              AI-Powered Content Creation
             </div>
 
-            {/* Podcast preview */}
-            <div className="absolute right-0 bottom-0 w-80 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-md border border-white/5 transform rotate-3 opacity-60 hover:opacity-100 transition-opacity duration-500">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <Mic2 className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <div className="text-white text-sm font-medium">AI Podcast</div>
-                  <div className="text-white/30 text-xs">multi-speaker</div>
-                </div>
+            {/* Main Headline - Display font, large, gradient text */}
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 tracking-tight leading-tight">
+              Transform text into
+              <br />
+              <span className="inline-block overflow-hidden" style={{ minHeight: '1.3em', paddingBottom: '0.25em', lineHeight: '1.3' }}>
+                <span
+                  key={rotatingWordIndex}
+                  className={`text-gradient inline-block transition-all duration-500 ease-out ${
+                    isTransitioning
+                      ? 'opacity-0 blur-sm scale-95 translate-y-[-100%]'
+                      : 'opacity-100 blur-0 scale-100 translate-y-0'
+                  }`}
+                  style={{
+                    lineHeight: '1.3',
+                    animation: isTransitioning ? 'none' : 'slideUpIn 0.5s ease-out'
+                  }}
+                >
+                  {mounted ? rotatingWords[rotatingWordIndex] : 'video'}.
+                </span>
+              </span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+              Transform text into videos, podcasts, audio, and quizzes—in any language, delivered anywhere.
+            </p>
+
+            {/* CTA - Outline button */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <a
+                href="https://cms-staging.edtechinc.com/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group px-10 py-4 rounded-lg border border-border bg-transparent text-foreground font-semibold text-lg hover:bg-muted transition-all duration-200 flex items-center gap-2"
+              >
+                Start Creating
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>5 Content Formats</span>
+              </div>
+              <div className="w-px h-4 bg-border" />
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4" />
+                <span>10x Faster</span>
+              </div>
+              <div className="w-px h-4 bg-border" />
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                <span>50+ Languages</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section - Scroll timeline */}
-      <section className="relative py-40 px-6">
-        <div className="max-w-5xl mx-auto">
+      {/* Features Section - Dark with dots */}
+      <section id="features" className="relative bg-background min-h-screen flex items-center">
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Section header */}
-          <div className="text-center mb-32">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
               Five ways to learn.
               <br />
-              <span className="text-white/30">One upload.</span>
+              <span className="text-muted-foreground">One upload.</span>
             </h2>
-            <p className="text-xl text-white/40 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Different learners need different formats. We generate them all.
             </p>
           </div>
 
-          {/* Timeline */}
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-8 md:left-16 top-0 bottom-0 w-px bg-gradient-to-b from-purple-500/50 via-purple-500/20 to-transparent" />
-
-            {/* Format items */}
-            <div className="space-y-24">
-              {[
-                {
-                  number: '01',
-                  icon: Video,
-                  title: 'AI Video',
-                  description: 'Professional videos with AI avatars, auto-captions, and dynamic editing. No camera needed.',
-                  color: 'text-pink-400',
-                  glow: 'from-pink-500/20 to-purple-500/20'
-                },
-                {
-                  number: '02',
-                  icon: Mic2,
-                  title: 'AI Podcast',
-                  description: 'Natural conversations between two AI voices with professional audio quality.',
-                  color: 'text-blue-400',
-                  glow: 'from-blue-500/20 to-cyan-500/20'
-                },
-                {
-                  number: '03',
-                  icon: Headphones,
-                  title: 'Audio Narration',
-                  description: 'Text-to-speech in multiple languages with natural-sounding AI voices.',
-                  color: 'text-teal-400',
-                  glow: 'from-teal-500/20 to-green-500/20'
-                },
-                {
-                  number: '04',
-                  icon: Brain,
-                  title: 'Interactive Quiz',
-                  description: 'Auto-generated assessments with MCQ, true/false, and fill-in-the-blank questions.',
-                  color: 'text-purple-400',
-                  glow: 'from-purple-500/20 to-indigo-500/20'
-                },
-                {
-                  number: '05',
-                  icon: Sparkles,
-                  title: 'Interactive Podcast',
-                  description: 'Podcasts with embedded quiz questions for active learning and engagement.',
-                  color: 'text-indigo-400',
-                  glow: 'from-indigo-500/20 to-blue-500/20'
-                },
-              ].map((feature, index) => (
-                <div
-                  key={index}
-                  data-timeline-item
-                  className={`relative flex items-start gap-8 md:gap-12 group transition-all duration-700 ${
-                    visibleItems.has(index)
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-12'
-                  }`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  {/* Number badge */}
-                  <div className="relative z-10 flex-shrink-0">
-                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br ${feature.glow} backdrop-blur-sm border border-white/10 flex items-center justify-center font-bold text-2xl md:text-3xl ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
-                      {feature.number}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 pt-2">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <feature.icon className={`w-6 h-6 ${feature.color}`} />
-                      </div>
-                      <h3 className="text-3xl md:text-4xl font-bold text-white">{feature.title}</h3>
-                    </div>
-                    <p className="text-lg md:text-xl text-white/50 leading-relaxed max-w-2xl">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works - Ultra minimal */}
-      <section className="relative py-40 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="text-5xl font-bold text-white mb-4">
-              Three steps.
-              <br />
-              <span className="text-white/30">That's it.</span>
-            </h2>
-          </div>
-
-          <div className="space-y-20">
+          {/* Feature cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                number: '01',
-                title: 'Upload',
-                description: 'Paste or upload your article content.',
+                icon: Video,
+                title: 'AI Video',
+                description: 'Professional videos with AI avatars, auto-captions, and dynamic editing. No camera needed.',
+                emoji: '🎥',
               },
               {
-                number: '02',
-                title: 'Select',
-                description: 'Choose which formats to generate.',
+                icon: Mic2,
+                title: 'AI Podcast',
+                description: 'Natural conversations between two AI voices with professional audio quality and engagement.',
+                emoji: '🎙️',
               },
               {
-                number: '03',
-                title: 'Download',
-                description: 'Review, edit, and publish your content.',
+                icon: Headphones,
+                title: 'Audio Narration',
+                description: 'Text-to-speech with natural-sounding AI voices for accessible and engaging learning.',
+                emoji: '🎧',
               },
-            ].map((step, index) => (
-              <div key={index} className="flex items-start gap-8 group">
-                <div className="text-7xl font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300 min-w-[120px]">
-                  {step.number}
+              {
+                icon: Brain,
+                title: 'Interactive Quiz',
+                description: 'Auto-generated assessments with multiple choice, true/false, and fill-in-the-blank questions.',
+                emoji: '🧠',
+              },
+              {
+                icon: Sparkles,
+                title: 'Interactive Podcast',
+                description: 'Podcasts with embedded quiz questions throughout for active learning and engagement.',
+                emoji: '✨',
+              },
+              {
+                icon: Globe,
+                title: 'Multilingual Support',
+                description: 'Create content in 32+ languages including English, Spanish, French, German, and more.',
+                emoji: '🌍',
+              },
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="group bg-card rounded-2xl p-5 border border-border/50 hover:shadow-md transition-all duration-300 flex flex-col h-full"
+              >
+                {/* Gradient icon box */}
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-3 text-xl shadow-primary transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  {feature.emoji}
                 </div>
-                <div className="pt-4">
-                  <h3 className="text-3xl font-bold text-white mb-3">{step.title}</h3>
-                  <p className="text-xl text-white/40">{step.description}</p>
-                </div>
+
+                {/* Title */}
+                <h3 className="font-display text-xl font-bold text-card-foreground mb-2">
+                  {feature.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-40 px-6">
-        <div className="max-w-4xl mx-auto text-center relative">
-          {/* Glow effect behind CTA */}
-          <div className="absolute inset-0 bg-gradient-radial from-purple-500/30 via-purple-600/10 to-transparent blur-3xl -z-10" />
+      {/* Results & Use Cases Section */}
+      <section className="relative bg-background py-32">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section header */}
+          <div className="text-center mb-16">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 tracking-tight">
+              Real results.
+              <br />
+              <span className="text-gradient">Across every use case.</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              From marketing teams to L&D departments, see the impact.
+            </p>
+          </div>
 
-          <h2 className="text-6xl md:text-7xl font-bold text-white mb-8 tracking-tight leading-tight">
+          {/* Use case cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Marketing Teams */}
+            <div className="bg-card rounded-2xl p-8 border border-border/50">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6 text-2xl shadow-primary">
+                📱
+              </div>
+              <h3 className="font-display text-2xl font-bold text-card-foreground mb-4">
+                Marketing Teams
+              </h3>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">95%</div>
+                  <p className="text-muted-foreground">Cost reduction vs. traditional video production</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">15 min</div>
+                  <p className="text-muted-foreground">Average time from script to finished video</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Replace expensive camera crews, actors, scriptwriters, and post-production teams. Traditional production costs $2,500-$50,000 per video—our platform delivers professional results in minutes.
+              </p>
+            </div>
+
+            {/* Custom Learning Solutions */}
+            <div className="bg-card rounded-2xl p-8 border border-border/50">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-teal to-accent-coral flex items-center justify-center mb-6 text-2xl shadow-teal">
+                🎓
+              </div>
+              <h3 className="font-display text-2xl font-bold text-card-foreground mb-4">
+                Custom Learning Solutions
+              </h3>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">10x</div>
+                  <p className="text-muted-foreground">Faster content updates and iterations</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">32+</div>
+                  <p className="text-muted-foreground">Languages for global reach</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Embed our platform into your app to deliver dynamic learning experiences to your users. Update content instantly, scale to any language, and provide multiple learning formats—all from one system.
+              </p>
+            </div>
+
+            {/* Employee Training */}
+            <div className="bg-card rounded-2xl p-8 border border-border/50">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6 text-2xl shadow-primary">
+                👥
+              </div>
+              <h3 className="font-display text-2xl font-bold text-card-foreground mb-4">
+                Employee Training
+              </h3>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">72 hrs</div>
+                  <p className="text-muted-foreground">Saved per month for L&D teams</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-gradient mb-2">40%</div>
+                  <p className="text-muted-foreground">Faster course creation with AI</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                L&D teams create and deliver training in one platform. Replace the 8+ hours traditionally needed per course with AI-powered creation, then deliver to employees instantly—no external vendors required.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works - Dark with dots */}
+      <section id="how-it-works" className="relative bg-background py-32">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-24">
+            <h2 className="font-display text-5xl md:text-6xl font-bold text-foreground mb-4 tracking-tight">
+              How it works
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {[
+              {
+                number: '01',
+                title: 'Upload',
+                description: 'Paste or upload your article content.',
+                emoji: '📝',
+              },
+              {
+                number: '02',
+                title: 'Select',
+                description: 'Choose which formats to generate.',
+                emoji: '⚙️',
+              },
+              {
+                number: '03',
+                title: 'Publish',
+                description: 'Download, review, edit, and publish your content.',
+                emoji: '🚀',
+              },
+            ].map((step, index) => (
+              <div key={index} className="text-center group">
+                {/* Numbered icon box */}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-teal to-accent-coral flex items-center justify-center mb-4 text-3xl mx-auto shadow-teal transform group-hover:scale-110 transition-all duration-300">
+                  {step.emoji}
+                </div>
+
+                <h3 className="font-display text-2xl font-bold text-foreground mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {step.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - Dark with dots */}
+      <section id="pricing" className="relative bg-background py-32">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 tracking-tight leading-tight">
             Ready to transform
             <br />
-            your content?
+            <span className="text-gradient">your content?</span>
           </h2>
 
-          <p className="text-2xl text-white/40 mb-12 font-light">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed">
             Join teams creating multimedia at scale.
           </p>
 
@@ -356,7 +445,7 @@ export default function LandingPage() {
             href="https://cms-staging.edtechinc.com/login"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-200 shadow-2xl shadow-white/20"
+            className="inline-flex items-center gap-3 px-12 py-5 rounded-lg border border-border bg-transparent text-foreground font-semibold text-lg hover:bg-muted transition-all duration-200"
           >
             Get Started
             <ArrowRight className="w-5 h-5" />
@@ -364,14 +453,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative py-12 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      {/* Footer - Savona style */}
+      <footer className="relative py-12 border-t border-border/30 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-primary">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-semibold text-white">EdTech Labs</span>
+            <span className="font-display text-lg font-bold text-foreground">EdTech Labs</span>
           </div>
           <div className="flex items-center gap-6 text-sm">
             <Link to="/terms" className="text-white/30 hover:text-white/60 transition-colors">
@@ -381,7 +470,7 @@ export default function LandingPage() {
               Privacy Policy
             </Link>
             <span className="text-white/30">
-              &copy; {new Date().getFullYear()} EdTech Labs, Inc.
+              &copy; {new Date().getFullYear()} EdTech Labs
             </span>
           </div>
         </div>
